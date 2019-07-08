@@ -26,7 +26,7 @@ def registration():
 
 @app.route('/signup', methods=['POST'])
 def signup():
-    mysql = MySQLConnection('basic_registration')
+    mysql = MySQLConnection('dojo_tweets')
 
     def calculateAge(birthdate):
         days_in_year = 365.2425
@@ -34,7 +34,7 @@ def signup():
         bday = date(int(bday_list[0]), int(bday_list[1]), int(bday_list[2]))
         age = int((date.today() - bday).days / days_in_year)
         return age
-    age = calculateAge(request.form['birthday'])
+    age = calculateAge(request.form['birthdate'])
     print(age)
     is_valid = True
     if len(request.form['fname']) < 1:
@@ -66,39 +66,60 @@ def signup():
         flash("Invalid email address!", 'errors')
     if is_valid:
         pw_hash = bcrypt.generate_password_hash(request.form['password'])
-        query = 'INSERT INTO users (first_name, last_name, birthday, email, pw_hash) VALUES(%(fname)s, %(lname)s, %(bday)s, %(email)s, %(pw_hash)s);'
+        query = 'INSERT INTO users (first_name, last_name, birthdate, email, password) VALUES(%(fname)s, %(lname)s, %(bday)s, %(email)s, %(pw_hash)s);'
         data = {'fname': request.form['fname'],
                 'lname': request.form['lname'],
-                'bday': request.form['birthday'],
+                'bday': request.form['birthdate'],
                 'email': request.form['email'],
                 'pw_hash': pw_hash}
         new_user_id = mysql.query_db(query, data)
         session['userID'] = new_user_id
-        return redirect('/success')
-        # flash('Registered successfully', 'success')
+        # return redirect('/dashboard')
+        if new_user_id:
+            flash('Registered successfully. Please log in.', 'success')
+        else:
+            flash('Unsuccessful. Please try again', 'errors')
     return redirect('/registration')
 
 
 @app.route('/login', methods=['POST'])
 def login():
-    mysql = MySQLConnection('basic_registration')
+    mysql = MySQLConnection('dojo_tweets')
     query = "SELECT * FROM users WHERE users.email = %(email)s;"
     data = {'email': request.form['email']}
     user = mysql.query_db(query, data)
     print(user)
     if user:
-        if bcrypt.check_password_hash(user[0]['pw_hash'], request.form['password']):
+        if bcrypt.check_password_hash(user[0]['password'], request.form['password']):
             session['userID'] = user[0]['id']
-            return redirect('/success')
+            return redirect('/dashboard')
     flash('You could not be logged in. Try again!', 'login error')
     return redirect('/registration')
 
 
-@app.route('/success')
-def success():
+@app.route('/dashboard')
+def dashboard():
     if session:
-        return render_template('success.html')
+        user_mysql = MySQLConnection('dojo_tweets')
+        user_query = "SELECT first_name, last_name FROM users WHERE users.id = %(userID)s;"
+        user_data = {'userID': session['userID']}
+        user = user_mysql.query_db(user_query, user_data)
+        tweets_mysql = MySQLConnection('dojo_tweets')
+        tweets_query = "SELECT users.first_name, users.last_name, tweets.message, tweets.created_at, tweets.updated_at FROM tweets JOIN users ON tweets.user_id = users.id ORDER BY tweets.created_at DESC;"
+        tweets = tweets_mysql.query_db(tweets_query)
+        print(tweets)
+        return render_template('dashboard.html', user_name=user[0], tweets=tweets)
     return redirect('/registration')
+
+
+@app.route('/tweet', methods=['POST'])
+def tweet():
+    mysql = MySQLConnection('dojo_tweets')
+    query = "INSERT INTO tweets (message, user_id) VALUES(%(message)s, %(userID)s);"
+    data = {'message': request.form['tweet'],
+            'userID': session['userID']}
+    new_tweet_id = mysql.query_db(query, data)
+    return redirect('/dashboard')
 
 
 @app.route('/logout')

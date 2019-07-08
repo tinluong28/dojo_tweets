@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+  <!--<![endif]-->
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Login Successfully</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <!--[if lt IE 7]>
+      <p class="browsehappy">
+        You are using an <strong>outdated</strong> browser. Please
+        <a href="#">upgrade your browser</a> to improve your experience.
+      </p>
+    <![endif]-->
+    <div class="container">
+      <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <a class="navbar-brand col-md-8" href="#">Dojo Twweets</a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <p class="nav-item col-md-3 text-light m-auto">
+            Welcome, {{ user_name.first_name }}
+          </p>
+          <a href="/logout" class="nav-link col-md-1">Logout</a>
+        </nav>
+      </div>
+      <div class="container mt-5">
+        <h2>Write a Tweet:</h2>
+        <div class="container">
+          <form action="/tweet" method="POST">
+            <textarea
+              class="form-group p-3 border border-dark"
+              name="tweet"
+              cols="30"
+              rows="5"
+              placeholder="Your tweet here..."
+            ></textarea>
+            <button type="submit" class="form-group btn btn-md btn-primary">
+              Submit
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="container">
+        <h3>Your Feed:</h3>
+        {% if tweets%}
+        <ul>
+          {% for tweet in tweets%}
+          <li class="card">
+            <p class="row">
+              <strong
+                >{{ tweet.first_name }} {{ tweet.last_name }} says:</strong
+              >
+            </p>
+            <p class="row">{{ tweet.message }}</p>
+            <div class="row text-primary">{{ tweet.created_at }}</div>
+          </li>
+          {% endfor%}
+        </ul>
+        {% endif %}
+      </div>
+    </div>
+
+    <script src="" async defer></script>
+  </body>
+</html>
