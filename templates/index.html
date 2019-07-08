@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+  <!--<![endif]-->
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Registration</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <!--[if lt IE 7]>
+      <p class="browsehappy">
+        You are using an <strong>outdated</strong> browser. Please
+        <a href="#">upgrade your browser</a> to improve your experience.
+      </p>
+    <![endif]-->
+    <div class="container row">
+      <div class="container col-md-5">
+        <h1>Registration</h1>
+        {% with success = get_flashed_messages(category_filter=['success']) %}
+        {% if success %}
+        <p class="badge badge-success">{{ success[0] }}</p>
+        {% endif %} {% endwith %} {% with errors =
+        get_flashed_messages(category_filter=["errors"]) %} {% if errors %}
+        <div>
+          {%- for msg in errors %}
+          <div>
+            <p class="badge badge-danger">{{ msg }}</p>
+          </div>
+
+          {% endfor -%}
+        </div>
+        {% endif %} {% endwith %}
+        <form action="/signup" method="POST">
+          <div class="form-group">
+            <label for="exampleFormControlInput1">First Name</label>
+            <input
+              type="text"
+              name="fname"
+              class="form-control"
+              id="exampleFormControlInput1"
+            />
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlInput1">Last Name</label>
+            <input
+              type="text"
+              name="lname"
+              class="form-control"
+              id="exampleFormControlInput1"
+            />
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlInput1">Last Name</label>
+            <input
+              type="date"
+              name="birthday"
+              max="1939-12-31"
+              class="form-control"
+              id="exampleFormControlInput1"
+            />
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlInput1">Email</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              id="exampleFormControlInput1"
+            />
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlInput1">Password</label>
+            <input
+              type="password"
+              name="password"
+              class="form-control"
+              id="exampleFormControlInput1"
+            />
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlInput1">Confirm Password</label>
+            <input
+              type="password"
+              name="confirmpass"
+              class="form-control"
+              id="exampleFormControlInput1"
+            />
+          </div>
+          <button type="submit" class="btn btn-md btn-primary">Register</button>
+        </form>
+      </div>
+      <div class="container col-md-5">
+        <h1>Login</h1>
+        {% with error = get_flashed_messages(category_filter=['login error']) %}
+        {% if error %}
+        <p class="badge badge-danger">{{ error[0] }}</p>
+        {% endif %} {% endwith %}
+        <form action="/login" method="POST">
+          <div class="form-group">
+            <label for="exampleFormControlInput1">Email</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              id="exampleFormControlInput1"
+            />
+          </div>
+          <div class="form-group">
+            <label for="exampleFormControlInput1">Password</label>
+            <input
+              type="password"
+              name="password"
+              class="form-control"
+              id="exampleFormControlInput1"
+            />
+          </div>
+          <button type="submit" class="btn btn-md btn-primary">Log In</button>
+        </form>
+      </div>
+    </div>
+    <script src="" async defer></script>
+  </body>
+</html>
