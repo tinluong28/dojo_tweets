@@ -149,7 +149,46 @@ def unlike_tweet(tweet_id):
     return redirect('/dashboard')
 
 
-@app.route('/delete_tweet/<tweet_id>')
+@app.route('/tweets/<tweet_id>/edit')
+def edit_tweet(tweet_id):
+    if session:
+        mysql = MySQLConnection('dojo_tweets')
+        query = "SELECT users.id FROM users LEFT JOIN tweets ON users.id = tweets.user_id WHERE tweets.id = %(tweet_id)s;"
+        data = {'tweet_id': tweet_id}
+        tweet_owner = mysql.query_db(query, data)
+        user_mysql = MySQLConnection('dojo_tweets')
+        user_query = "SELECT first_name, last_name, id FROM users WHERE users.id = %(userID)s;"
+        user_data = {'userID': session['userID']}
+        user = user_mysql.query_db(user_query, user_data)
+        if session['userID'] == tweet_owner[0]['id']:
+            mysql = MySQLConnection('dojo_tweets')
+            query = "SELECT message FROM tweets WHERE tweets.id = %(tweet_id)s"
+            data = {'tweet_id': tweet_id}
+            message = mysql.query_db(query, data)
+            return render_template('edit_tweet.html', tweet_id=tweet_id, current_user=user[0], message=message[0]['message'])
+        else:
+            flash("You can't edit tweet that isn't your own", 'errors')
+            return render_template('edit_tweet.html', tweet_id=tweet_id, current_user=user[0], message="")
+    return redirect('/registration')
+
+
+@app.route('/tweets/<tweet_id>/update_tweet', methods=['POST'])
+def update_tweet(tweet_id):
+    is_valid = True
+    if len(request.form['updated_msg']) > 255:
+        is_valid = False
+        flash('Tweets must be less than 225 charaters', 'errors')
+        return redirect('/tweets/<tweet_id>/edit')
+    if is_valid:
+        mysql = MySQLConnection('dojo_tweets')
+        query = "UPDATE tweets SET message = %(message)s WHERE tweets.id = %(tweet_id)s"
+        data = {'message': request.form['updated_msg'],
+                'tweet_id': tweet_id}
+        mysql.query_db(query, data)
+    return redirect('/dashboard')
+
+
+@app.route('/tweets/<tweet_id>/delete')
 def delete_tweet(tweet_id):
     mysql = MySQLConnection('dojo_tweets')
     query = "DELETE FROM tweets WHERE tweets.id = %(tweet_id)s;"

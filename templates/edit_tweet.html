@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Dojo Tweets</title>
+    <title>Edit Tweet</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
@@ -47,66 +47,34 @@
         </nav>
       </div>
       <div class="container mt-5">
-        <h2>Write a Tweet:</h2>
+        <h2>Edit Tweet:</h2>
         {% with error = get_flashed_messages(category_filter=['errors']) %} {%
         if error %}
         <p class="badge badge-warning">{{ error[0] }}</p>
         {% endif %} {% endwith %}
         <div class="container">
-          <form action="/tweet" method="POST">
+          <form action="/tweets/{{ tweet_id }}/update_tweet" method="POST">
             <textarea
               class="form-group p-3 border border-dark"
-              name="tweet"
+              name="updated_msg"
               cols="30"
               rows="5"
               placeholder="Your tweet here..."
-            ></textarea>
-            <button type="submit" class="form-group btn btn-md btn-primary">
-              Submit
-            </button>
+              >{{ message }}</textarea
+            >
+            <div class="row">
+              <button
+                type="submit"
+                class="form-group btn btn-md btn-primary mr-2"
+              >
+                Submit
+              </button>
+              <a href="/dashboard" class="form-group btn btn-md btn-secondary"
+                >Cancel</a
+              >
+            </div>
           </form>
         </div>
-      </div>
-      <div class="container">
-        <h3 class="mb-3">Your Feed:</h3>
-        {% if tweets%}
-        <ul>
-          {% for tweet in tweets%}
-          <li class="card mt-2">
-            <div class="card-body">
-              <h5 class="card-title">
-                {{ tweet.first_name }} {{ tweet.last_name }} says:
-              </h5>
-              <p class="card-text d-block">{{ tweet.message }}</p>
-              {% if tweet.user_id == session['userID'] %}
-              <a href="/tweets/{{ tweet.tweet_id }}/delete" class="card-link"
-                >Delete</a
-              >
-              <a href="/tweets/{{ tweet.tweet_id }}/edit" class="card-link"
-                >Edit</a
-              >
-              {% endif %}
-              <p class="d-block text-muted card-footer">
-                {{ tweet.created_at }}
-              </p>
-              <p>
-                {% if tweet.num_of_likes == 1 %}
-                <i>{{ tweet.num_of_likes }} like</i>
-                {% elif tweet.num_of_likes > 1 %}
-                <i>{{ tweet.num_of_likes }} likes</i>
-                {% endif %}
-              </p>
-              {% if tweet.liked_by and current_user.id|string() in
-              tweet.liked_by %}
-              <a href="tweets/{{ tweet.tweet_id }}/unlike">Unlike</a>
-              {% else %}
-              <a href="/tweets/{{ tweet.tweet_id }}/like">Like</a>
-              {% endif %}
-            </div>
-          </li>
-          {% endfor%}
-        </ul>
-        {% endif %}
       </div>
     </div>
 
