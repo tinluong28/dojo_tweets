@@ -101,24 +101,60 @@ def login():
 def dashboard():
     if session:
         user_mysql = MySQLConnection('dojo_tweets')
-        user_query = "SELECT first_name, last_name FROM users WHERE users.id = %(userID)s;"
+        user_query = "SELECT first_name, last_name, id FROM users WHERE users.id = %(userID)s;"
         user_data = {'userID': session['userID']}
         user = user_mysql.query_db(user_query, user_data)
         tweets_mysql = MySQLConnection('dojo_tweets')
-        tweets_query = "SELECT users.first_name, users.last_name, tweets.message, tweets.created_at, tweets.updated_at FROM tweets JOIN users ON tweets.user_id = users.id ORDER BY tweets.created_at DESC;"
+        tweets_query = "SELECT tweets.id as tweet_id, tweets.message, users.id as user_id, users.first_name, users.last_name, tweets.created_at, tweets.updated_at, COUNT(likes.id) as num_of_likes, GROUP_CONCAT(likes.user_id) as liked_by FROM tweets LEFT JOIN users ON tweets.user_id = users.id LEFT JOIN likes ON likes.tweet_id = tweets.id GROUP BY message ORDER BY tweets.created_at DESC;"
         tweets = tweets_mysql.query_db(tweets_query)
-        print(tweets)
-        return render_template('dashboard.html', user_name=user[0], tweets=tweets)
+        for tweet in tweets:
+            if tweet['liked_by']:
+                tweet['liked_by'] = tweet['liked_by'].split(',')
+        return render_template('dashboard.html', current_user=user[0], tweets=tweets)
     return redirect('/registration')
 
 
 @app.route('/tweet', methods=['POST'])
 def tweet():
+    is_valid = True
+    if len(request.form['tweet']) > 255:
+        is_valid = False
+        flash('Tweets must be less than 225 charaters', 'errors')
+    if is_valid:
+        mysql = MySQLConnection('dojo_tweets')
+        query = "INSERT INTO tweets (message, user_id) VALUES(%(message)s, %(userID)s);"
+        data = {'message': request.form['tweet'],
+                'userID': session['userID']}
+        new_tweet_id = mysql.query_db(query, data)
+    return redirect('/dashboard')
+
+
+@app.route('/tweets/<tweet_id>/like')
+def like_tweet(tweet_id):
     mysql = MySQLConnection('dojo_tweets')
-    query = "INSERT INTO tweets (message, user_id) VALUES(%(message)s, %(userID)s);"
-    data = {'message': request.form['tweet'],
-            'userID': session['userID']}
-    new_tweet_id = mysql.query_db(query, data)
+    query = "INSERT INTO likes (user_id, tweet_id) VALUES(%(user_id)s, %(tweet_id)s)"
+    data = {'user_id': session['userID'],
+            'tweet_id': tweet_id}
+    new_like_id = mysql.query_db(query, data)
+    return redirect('/dashboard')
+
+
+@app.route('/tweets/<tweet_id>/unlike')
+def unlike_tweet(tweet_id):
+    mysql = MySQLConnection('dojo_tweets')
+    query = "DELETE FROM likes WHERE likes.tweet_id = %(tweet_id)s AND likes.user_id = %(user_id)s"
+    data = {'tweet_id': tweet_id,
+            'user_id': session['userID']}
+    mysql.query_db(query, data)
+    return redirect('/dashboard')
+
+
+@app.route('/delete_tweet/<tweet_id>')
+def delete_tweet(tweet_id):
+    mysql = MySQLConnection('dojo_tweets')
+    query = "DELETE FROM tweets WHERE tweets.id = %(tweet_id)s;"
+    data = {'tweet_id': tweet_id}
+    mysql.query_db(query, data)
     return redirect('/dashboard')
 
 
