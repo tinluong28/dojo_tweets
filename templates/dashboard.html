@@ -28,7 +28,11 @@
     <div class="container">
       <div class="container">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-          <a class="navbar-brand col-md-8" href="#">Dojo Twweets</a>
+          <a class="navbar-brand col-md-2" href="#">Dojo Twweets</a>
+          <a class="navbar-link col-md-1 text-light" href="/users">Users</a>
+          <a class="navbar-link col-md-5 text-light" href="/followers"
+            >Followers</a
+          >
           <button
             class="navbar-toggler"
             type="button"
@@ -69,9 +73,15 @@
       </div>
       <div class="container">
         <h3 class="mb-3">Your Feed:</h3>
-        {% if tweets%}
+        {% if following_id == [] %}
+        <p>
+          You're not following anyone yet. Please start following
+          <a href="/users">someone</a> to see their tweets.
+        </p>
+        {% endif %} {% if tweets%}
         <ul>
-          {% for tweet in tweets%}
+          {% for tweet in tweets%} {% if tweet.user_id|string() in following_id
+          or tweet.user_id == session['userID'] %}
           <li class="card mt-2">
             <div class="card-body">
               <h5 class="card-title">
@@ -104,7 +114,7 @@
               {% endif %}
             </div>
           </li>
-          {% endfor%}
+          {% endif %} {% endfor%}
         </ul>
         {% endif %}
       </div>

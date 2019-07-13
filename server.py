@@ -97,6 +97,69 @@ def login():
     return redirect('/registration')
 
 
+@app.route('/users')
+def users():
+    if session:
+        user_mysql = MySQLConnection('dojo_tweets')
+        user_query = "SELECT first_name, last_name, id FROM users WHERE users.id = %(userID)s;"
+        user_data = {'userID': session['userID']}
+        user = user_mysql.query_db(user_query, user_data)
+        users_mysql = MySQLConnection('dojo_tweets')
+        users_query = f"SELECT * FROM users WHERE users.id != {session['userID']}"
+        all_users = users_mysql.query_db(users_query)
+        following_users_mysql = MySQLConnection('dojo_tweets')
+        following_users_query = f"SELECT GROUP_CONCAT(follows.following_id) as following_id FROM users LEFT JOIN follows ON users.id = follows.user_id WHERE users.id = {session['userID']} GROUP BY users.id;"
+        following_users = following_users_mysql.query_db(following_users_query)
+        if following_users[0]['following_id']:
+            following_id = following_users[0]['following_id'].split(',')
+        else:
+            following_id = []
+        return render_template('users.html', current_user=user[0], all_users=all_users, following_id=following_id)
+    return redirect('/registration')
+
+
+@app.route('/followers')
+def followers():
+    if session:
+        user_mysql = MySQLConnection('dojo_tweets')
+        user_query = "SELECT first_name, last_name, id FROM users WHERE users.id = %(userID)s;"
+        user_data = {'userID': session['userID']}
+        user = user_mysql.query_db(user_query, user_data)
+        follower_mysql = MySQLConnection('dojo_tweets')
+        follower_query = f"SELECT followers.id, followers.first_name, followers.last_name, followers.email FROM users LEFT JOIN follows ON users.id = follows.following_id LEFT JOIN users as followers ON follows.user_id = followers.id WHERE users.id = {session['userID']};"
+        followers = follower_mysql.query_db(follower_query)
+        print(followers)
+        following_users_mysql = MySQLConnection('dojo_tweets')
+        following_users_query = f"SELECT GROUP_CONCAT(follows.following_id) as following_id FROM users LEFT JOIN follows ON users.id = follows.user_id WHERE users.id = {session['userID']} GROUP BY users.id;"
+        following_users = following_users_mysql.query_db(following_users_query)
+        if following_users[0]['following_id']:
+            following_id = following_users[0]['following_id'].split(',')
+        else:
+            following_id = []
+        return render_template('followers.html', current_user=user[0], followers=followers, following_id=following_id)
+    return redirect('/registration')
+
+
+@app.route('/<followed_user>/follow')
+def follow(followed_user):
+    mysql = MySQLConnection('dojo_tweets')
+    query = "INSERT INTO follows (user_id,following_id) VALUES(%(user_id)s, %(following_id)s);"
+    data = {'user_id': session['userID'],
+            'following_id': followed_user}
+    mysql.query_db(query, data)
+    return redirect('/users')
+
+
+@app.route('/<followed_user>/unfollow')
+def unfollow(followed_user):
+    mysql = MySQLConnection('dojo_tweets')
+    query = "DELETE FROM follows WHERE user_id = %(user_id)s AND following_id= %(following_id)s;"
+    data = {'user_id': session['userID'],
+            'following_id': followed_user}
+    mysql.query_db(query, data)
+    return redirect('/users')
+
+
 @app.route('/dashboard')
 def dashboard():
     if session:
@@ -107,10 +170,17 @@ def dashboard():
         tweets_mysql = MySQLConnection('dojo_tweets')
         tweets_query = "SELECT tweets.id as tweet_id, tweets.message, users.id as user_id, users.first_name, users.last_name, tweets.created_at, tweets.updated_at, COUNT(likes.id) as num_of_likes, GROUP_CONCAT(likes.user_id) as liked_by FROM tweets LEFT JOIN users ON tweets.user_id = users.id LEFT JOIN likes ON likes.tweet_id = tweets.id GROUP BY message ORDER BY tweets.created_at DESC;"
         tweets = tweets_mysql.query_db(tweets_query)
+        following_users_mysql = MySQLConnection('dojo_tweets')
+        following_users_query = f"SELECT GROUP_CONCAT(follows.following_id) as following_id FROM users LEFT JOIN follows ON users.id = follows.user_id WHERE users.id = {session['userID']} GROUP BY users.id;"
+        following_users = following_users_mysql.query_db(following_users_query)
+        if following_users[0]['following_id']:
+            following_id = following_users[0]['following_id'].split(',')
+        else:
+            following_id = []
         for tweet in tweets:
             if tweet['liked_by']:
                 tweet['liked_by'] = tweet['liked_by'].split(',')
-        return render_template('dashboard.html', current_user=user[0], tweets=tweets)
+        return render_template('dashboard.html', current_user=user[0], tweets=tweets, following_id=following_id)
     return redirect('/registration')
 
 
