@@ -187,9 +187,9 @@ def dashboard():
 @app.route('/tweet', methods=['POST'])
 def tweet():
     is_valid = True
-    if len(request.form['tweet']) > 255:
+    if len(request.form['tweet']) < 5 or len(request.form['tweet']) > 255:
         is_valid = False
-        flash('Tweets must be less than 225 charaters', 'errors')
+        flash('Tweets must be between 5 and 225 charaters', 'errors')
     if is_valid:
         mysql = MySQLConnection('dojo_tweets')
         query = "INSERT INTO tweets (message, user_id) VALUES(%(message)s, %(userID)s);"
